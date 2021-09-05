@@ -1247,6 +1247,11 @@
   resolved "https://registry.yarnpkg.com/@types/cordova/-/cordova-0.0.34.tgz#ea7addf74ecec3d7629827a0c39e2c9addc73d04"
   integrity sha1-6nrd907Ow9dimCegw54smt3HPQQ=
 
+"@types/cytoscape@^3.14.17":
+  version "3.14.17"
+  resolved "https://registry.yarnpkg.com/@types/cytoscape/-/cytoscape-3.14.17.tgz#20eaa183e8b0509d6d38e80600e9ff25d70f607b"
+  integrity sha512-0s/bNVEgaxNDh9xZvke1vg7eZcPPM8UuBIuks0/tOjMTRnL4F1b7/yNaVCNY3gXpIWStaqH31k1CI7cyeP9Wkw==
+
 "@types/electron-packager@14.0.0":
   version "14.0.0"
   resolved "https://registry.yarnpkg.com/@types/electron-packager/-/electron-packager-14.0.0.tgz#f6dab1542fe02a3dd235d9bf66c8cb365f123902"
@@ -2673,6 +2678,14 @@ csstype@^2.6.8:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.6.17.tgz#4cf30eb87e1d1a005d8b6510f95292413f6a1c0e"
   integrity sha512-u1wmTI1jJGzCJzWndZo8mk4wnPTZd1eOIYTYvuEyOQGfmDl3TrabCCfKnOC86FZwW/9djqTl933UF/cS425i9A==
 
+cytoscape@^3.19.1:
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/cytoscape/-/cytoscape-3.19.1.tgz#034fb5e5de7e6b9b7c948a48da8ab7037d430f69"
+  integrity sha512-fQSymoCzmDF5dejZqv94WXQUnI3cVZfaHWFQR+Q9RhJ6LzEs7dtkwgFYaoklsbXcrXz0uCGx4i3vQ0FiuOUu9Q==
+  dependencies:
+    heap "^0.2.6"
+    lodash.debounce "^4.0.8"
+
 debug@2.6.9, debug@^2.6.8:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.9.tgz#5d128515df134ff327e90a4c93f4e077a536341f"
@@ -3696,6 +3709,11 @@ he@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
+
+heap@^0.2.6:
+  version "0.2.6"
+  resolved "https://registry.yarnpkg.com/heap/-/heap-0.2.6.tgz#087e1f10b046932fc8594dd9e6d378afc9d1e5ac"
+  integrity sha1-CH4fELBGky/IWU3Z5tN4r8nR5aw=
 
 hpack.js@^2.1.6:
   version "2.1.6"
