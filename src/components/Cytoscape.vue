@@ -9,6 +9,9 @@ import {
   defineComponent,
 } from 'vue';
 import cytoscape from 'cytoscape';
+import cxtmenu from 'cytoscape-cxtmenu';
+
+cytoscape.use( cxtmenu );
 
 export default defineComponent({
   name: 'Cytoscape',
@@ -55,6 +58,54 @@ export default defineComponent({
         rows: 1
       }
 
+    });
+
+    cy.cxtmenu({
+      selector: 'node, edge',
+
+      commands: [
+        {
+          content: '<span class="fa fa-flash fa-2x"></span>',
+          select: function(ele: cytoscape.Singular){
+            console.log( ele.id() );
+          }
+        },
+
+        {
+          content: '<span class="fa fa-star fa-2x"></span>',
+          select: function(ele: cytoscape.Singular){
+            console.log( ele.data('name') );
+          },
+          enabled: false
+        },
+
+        {
+          content: 'Text',
+          select: function(ele: cytoscape.NodeSingularPosition){
+            console.log( ele.position() );
+          }
+        }
+      ]
+    });
+
+    cy.cxtmenu({
+      selector: 'core',
+
+      commands: [
+        {
+          content: 'bg1',
+          select: function(){
+            console.log( 'bg1' );
+          }
+        },
+
+        {
+          content: 'bg2',
+          select: function(){
+            console.log( 'bg2' );
+          }
+        }
+      ]
     });
   },
 

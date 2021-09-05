@@ -2678,6 +2678,11 @@ csstype@^2.6.8:
   resolved "https://registry.yarnpkg.com/csstype/-/csstype-2.6.17.tgz#4cf30eb87e1d1a005d8b6510f95292413f6a1c0e"
   integrity sha512-u1wmTI1jJGzCJzWndZo8mk4wnPTZd1eOIYTYvuEyOQGfmDl3TrabCCfKnOC86FZwW/9djqTl933UF/cS425i9A==
 
+cytoscape-cxtmenu@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/cytoscape-cxtmenu/-/cytoscape-cxtmenu-3.4.0.tgz#5ef4652b5a2e9718827adaab6467a28e0be21718"
+  integrity sha512-ZKaGUuYwNPcHc0DbiznfbWGz7IYcu1jmNJj14Jm0LO3IfjTJECWkQJ2RYVbQqcvQzydFemLTXs+8CAsIAcyAIA==
+
 cytoscape@^3.19.1:
   version "3.19.1"
   resolved "https://registry.yarnpkg.com/cytoscape/-/cytoscape-3.19.1.tgz#034fb5e5de7e6b9b7c948a48da8ab7037d430f69"
