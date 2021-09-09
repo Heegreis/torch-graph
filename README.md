@@ -1,4 +1,4 @@
-# Torch Graph (torch_graph)
+# Torch Graph (torch-graph)
 
 A Quasar Framework app
 

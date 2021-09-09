@@ -6,14 +6,12 @@
   </q-page>
 </template>
 
-<script lang="ts">
-import { Todo, Meta } from 'components/models';
+<script>
+import { defineComponent } from 'vue';
 import CytoscapeComponent from 'components/Cytoscape.vue';
-import { defineComponent, ref } from 'vue';
 
 export default defineComponent({
   name: 'TorchGraph',
   components: { CytoscapeComponent },
-  
-});
+})
 </script>

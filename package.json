@@ -1,21 +1,21 @@
 {
-  "name": "torch_graph",
+  "name": "torch-graph",
   "version": "0.0.1",
   "description": "A Quasar Framework app",
   "productName": "Torch Graph",
   "author": "Heegreis <run3113214@gmail.com>",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.ts,.vue ./",
+    "lint": "eslint --ext .js,.vue ./",
     "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "@types/cytoscape": "^3.14.17",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "cytoscape": "^3.19.1",
     "cytoscape-cxtmenu": "^3.4.0",
+    "cytoscape-dagre": "^2.3.2",
     "quasar": "^2.0.0",
     "vue-i18n": "^9.0.0",
     "vuex": "^4.0.1"
@@ -23,12 +23,10 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app": "^3.0.0",
-    "@types/node": "^12.20.21",
-    "@typescript-eslint/eslint-plugin": "^4.16.1",
-    "@typescript-eslint/parser": "^4.16.1",
     "eslint": "^7.14.0",
     "eslint-config-prettier": "^8.1.0",
-    "eslint-plugin-vue": "^7.0.0"
+    "eslint-plugin-vue": "^7.0.0",
+    "eslint-webpack-plugin": "^2.4.0"
   },
   "browserslist": [
     "last 10 Chrome versions",
