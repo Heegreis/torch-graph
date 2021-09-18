@@ -23,10 +23,11 @@
       <q-scroll-area class="fit">
         <div class="q-pa-sm">
           <q-input
-            v-model="text"
+            v-model="editNodeTextInput"
             filled
             autogrow
           ></q-input>
+          <q-btn label="Edit" @click="changeNodeLabel()" />
         </div>
       </q-scroll-area>
     </q-drawer>
@@ -49,11 +50,11 @@ cytoscape.use(cxtmenu)
 cytoscape.use(dagre)
 
 function setCytoscape() {
-  const cy = ref()
+  const cyRef = ref()
   const focusedNodeID = ref('')
   
   onMounted(() => {
-    const cyInstance = cytoscape({
+    const cy = cytoscape({
       container: document.getElementById('cy'), // container to render in
 
       elements: [ // list of graph elements to start with
@@ -78,11 +79,11 @@ function setCytoscape() {
 
     })
 
-    cyInstance.on('tap', function(event){
+    cy.on('tap', function(event){
       const evtTarget = event.target;
       
       let isNode = false
-      if(evtTarget === cyInstance){
+      if(evtTarget === cy){
         isNode = false
       } else {
         if (evtTarget.isNode()) {
@@ -98,7 +99,7 @@ function setCytoscape() {
       }
     })
 
-    cyInstance.cxtmenu({
+    cy.cxtmenu({
       selector: 'node, edge',
 
       commands: [
@@ -127,7 +128,7 @@ function setCytoscape() {
       ]
     })
 
-    cyInstance.cxtmenu({
+    cy.cxtmenu({
 
       selector: 'core',
 
@@ -148,31 +149,39 @@ function setCytoscape() {
       ]
     })
 
-    cy.value = cyInstance
+    cyRef.value = cy
   })
 
-  return{cy, focusedNodeID}
+  return{cyRef, focusedNodeID}
 }
 
 export default defineComponent({
   name: 'Cytoscape',
   setup () {
-    const {cy, focusedNodeID} = setCytoscape()
+    const {cyRef, focusedNodeID} = setCytoscape()
 
     let drawerRight = ref(false)
+    let editNodeTextInput = ref('')
 
     watch(focusedNodeID, () => {
       if (focusedNodeID.value === '') {
         drawerRight.value = false
+        editNodeTextInput.value = ''
       } else {
         drawerRight.value = true
+        editNodeTextInput.value = cyRef.value.getElementById(focusedNodeID.value).data('label')
       }
     })
 
     return {
       drawerRight,
-      text: ref(''),
-      cy, focusedNodeID
+      editNodeTextInput,
+      cyRef, focusedNodeID
+    }
+  },
+  methods: {
+    changeNodeLabel() {
+      this.cyRef.getElementById(this.focusedNodeID).data('label', this.editNodeTextInput)
     }
   },
 })
