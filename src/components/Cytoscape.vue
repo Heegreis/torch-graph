@@ -38,6 +38,8 @@
 import {
   defineComponent,
   ref,
+  watch,
+  onMounted,
 } from 'vue'
 import cytoscape from 'cytoscape'
 import cxtmenu from 'cytoscape-cxtmenu'
@@ -46,21 +48,12 @@ import dagre from 'cytoscape-dagre'
 cytoscape.use(cxtmenu)
 cytoscape.use(dagre)
 
-export default defineComponent({
-  name: 'Cytoscape',
-  setup () {
-    return {
-      drawerRight: ref(false),
-      text: ref(''),
-    }
-  },
-  data() {
-    return {
-      focusedNodeID: ''
-    }
-  },
-  mounted() {
-    const cy = cytoscape({
+function setCytoscape() {
+  const cy = ref()
+  const focusedNodeID = ref('')
+  
+  onMounted(() => {
+    const cyInstance = cytoscape({
       container: document.getElementById('cy'), // container to render in
 
       elements: [ // list of graph elements to start with
@@ -85,13 +78,11 @@ export default defineComponent({
 
     })
 
-    const vm = this
-
-    cy.on('tap', function(event){
+    cyInstance.on('tap', function(event){
       const evtTarget = event.target;
       
       let isNode = false
-      if(evtTarget === cy){
+      if(evtTarget === cyInstance){
         isNode = false
       } else {
         if (evtTarget.isNode()) {
@@ -101,15 +92,13 @@ export default defineComponent({
         }
       }
       if (isNode) {
-        vm.$data.focusedNodeID = evtTarget.id()
-        vm.drawerRight = true
+        focusedNodeID.value = evtTarget.id()
       } else {
-        vm.$data.focusedNodeID = ''
-        vm.drawerRight = false
+        focusedNodeID.value = ''
       }
     })
 
-    cy.cxtmenu({
+    cyInstance.cxtmenu({
       selector: 'node, edge',
 
       commands: [
@@ -138,7 +127,8 @@ export default defineComponent({
       ]
     })
 
-    cy.cxtmenu({
+    cyInstance.cxtmenu({
+
       selector: 'core',
 
       commands: [
@@ -157,6 +147,33 @@ export default defineComponent({
         }
       ]
     })
+
+    cy.value = cyInstance
+  })
+
+  return{cy, focusedNodeID}
+}
+
+export default defineComponent({
+  name: 'Cytoscape',
+  setup () {
+    const {cy, focusedNodeID} = setCytoscape()
+
+    let drawerRight = ref(false)
+
+    watch(focusedNodeID, () => {
+      if (focusedNodeID.value === '') {
+        drawerRight.value = false
+      } else {
+        drawerRight.value = true
+      }
+    })
+
+    return {
+      drawerRight,
+      text: ref(''),
+      cy, focusedNodeID
+    }
   },
 })
 </script>
