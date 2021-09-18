@@ -99,53 +99,37 @@ function setCytoscape() {
       }
     })
 
+    let cxttapstartRenderedPosition = {}
+    cy.on('cxttapstart', function (event) {
+      cxttapstartRenderedPosition = event.renderedPosition
+    })
+
     cy.cxtmenu({
       selector: 'node, edge',
-
       commands: [
         {
-          content: '<span class="fa fa-flash fa-2x"></span>',
+          content: 'console show id',
           select: function(ele){
-            console.log( ele.id() )
+            console.log(ele.id())
           }
         },
-
-        {
-          content: 'Add dom',
-          select: function(ele){
-            // console.log( ele.data('name') )
-          },
-          // enabled: false
-        },
-
-        {
-          content: 'Text',
-          select: function(ele){
-            console.log( ele.position() )
-            ele.data('id', 'new')
-          }
-        }
       ]
     })
 
     cy.cxtmenu({
-
       selector: 'core',
-
       commands: [
         {
-          content: 'bg1',
-          select: function(){
+          content: 'Add Node',
+          select: function(event){
             console.log( 'bg1' )
+            cy.add({
+              group: 'nodes',
+              data: { label: 'cccc' },
+              renderedPosition: cxttapstartRenderedPosition
+            })
           }
         },
-
-        {
-          content: 'bg2',
-          select: function(){
-            console.log( 'bg2' )
-          }
-        }
       ]
     })
 
