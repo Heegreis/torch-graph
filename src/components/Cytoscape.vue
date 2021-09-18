@@ -1,55 +1,68 @@
 <template>
-  <div id="cy">
+  <q-layout view="hHh Lpr lff" container class="shadow-2 rounded-borders max_size">
+    <q-header elevated class="bg-black">
+      <q-toolbar>
+        <q-toolbar-title>Header</q-toolbar-title>
+        <q-btn flat @click="drawerRight = !drawerRight" round dense icon="menu" />
+      </q-toolbar>
+    </q-header>
+
+    <q-page-container>
+      <q-page>
+        <div id="cy" class="max_size"></div>
+      </q-page>
+    </q-page-container>
+
+    <q-drawer
+      side="right"
+      v-model="drawerRight"
+      bordered
+      :width="200"
+      class="bg-grey-3"
+    >
+      <q-scroll-area class="fit">
+        <div class="q-pa-sm">
+          <q-input
+            v-model="text"
+            filled
+            autogrow
+          ></q-input>
+        </div>
+      </q-scroll-area>
+    </q-drawer>
     
-  </div>
+  </q-layout>
 </template>
 
 <script>
 import {
   defineComponent,
+  ref,
 } from 'vue'
 import cytoscape from 'cytoscape'
 import cxtmenu from 'cytoscape-cxtmenu'
 import dagre from 'cytoscape-dagre'
 
-cytoscape.use( cxtmenu )
-cytoscape.use( dagre )
+cytoscape.use(cxtmenu)
+cytoscape.use(dagre)
 
 export default defineComponent({
   name: 'Cytoscape',
-  // data() {
-  //   return {
-  //     eles: [ // list of graph elements to start with
-  //       { // node a
-  //         data: { id: 'a' }
-  //       },
-  //       { // node b
-  //         data: { id: 'b' }
-  //       },
-  //       { // edge ab
-  //         data: { id: 'ab', source: 'a', target: 'b' }
-  //       }
-  //     ]
-  //   }
-  // },
+  setup () {
+    return {
+      drawerRight: ref(false),
+      text: ref(''),
+    }
+  },
+  data() {
+    return {
+      focusedNodeID: ''
+    }
+  },
   mounted() {
     const cy = cytoscape({
-
       container: document.getElementById('cy'), // container to render in
 
-      // elements: [ // list of graph elements to start with
-      //   { // node a
-      //     data: { id: 'a' }
-      //   },
-      //   { // node b
-      //     data: { id: 'b' }
-      //   },
-      //   { // edge ab
-      //     data: { id: 'ab', source: 'a', target: 'b' }
-      //   }
-      // ],
-      // elements: fetch('klay.json').then(function( res ){ return res.json() }),
-      // elements: this.eles,
       elements: [ // list of graph elements to start with
         { // node a
           data: { id: 'a', label: 'aaaaaaaaaaaaaaaaaaaa' }
@@ -72,6 +85,30 @@ export default defineComponent({
 
     })
 
+    const vm = this
+
+    cy.on('tap', function(event){
+      const evtTarget = event.target;
+      
+      let isNode = false
+      if(evtTarget === cy){
+        isNode = false
+      } else {
+        if (evtTarget.isNode()) {
+          isNode = true
+        } else {
+          isNode = false
+        }
+      }
+      if (isNode) {
+        vm.$data.focusedNodeID = evtTarget.id()
+        vm.drawerRight = true
+      } else {
+        vm.$data.focusedNodeID = ''
+        vm.drawerRight = false
+      }
+    })
+
     cy.cxtmenu({
       selector: 'node, edge',
 
@@ -84,22 +121,17 @@ export default defineComponent({
         },
 
         {
-          content: '<span class="fa fa-star fa-2x"></span>',
+          content: 'Add dom',
           select: function(ele){
-            console.log( ele.data('name') )
+            // console.log( ele.data('name') )
           },
-          enabled: false
+          // enabled: false
         },
 
         {
           content: 'Text',
           select: function(ele){
             console.log( ele.position() )
-            // cy.add({
-            //   group: 'nodes',
-            //   data: { weight: 75 },
-            //   position: { x: 200, y: 200 }
-            // })
             ele.data('id', 'new')
           }
         }
@@ -131,11 +163,17 @@ export default defineComponent({
 
 <style lang="scss">
 #cy {
-  width: 100%;
+  // width: 100%;
+  // min-height: inherit;
+  // display: flex;
+  // flex-direction: column;
+  // margin: 5px
+  // border: 1px solid
+}
+.max_size {
+  // width: 100%;
   min-height: inherit;
   display: flex;
   flex-direction: column;
-  // margin: 5px
-  // border: 1px solid
 }
 </style>

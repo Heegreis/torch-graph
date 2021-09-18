@@ -2,7 +2,6 @@
     {
         "selector": "node",
         "style": {
-            "background-color": "#666",
             "label": "data(label)",
             "text-halign": "center",
             "text-valign": "center",
