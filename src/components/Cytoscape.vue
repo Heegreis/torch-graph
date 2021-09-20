@@ -44,9 +44,11 @@ import {
 } from 'vue'
 import cytoscape from 'cytoscape'
 import cxtmenu from 'cytoscape-cxtmenu'
+import edgehandles from 'cytoscape-edgehandles'
 import dagre from 'cytoscape-dagre'
 
 cytoscape.use(cxtmenu)
+cytoscape.use(edgehandles)
 cytoscape.use(dagre)
 
 function setCytoscape() {
@@ -79,6 +81,8 @@ function setCytoscape() {
 
     })
 
+    let eh = cy.edgehandles()
+
     cy.on('tap', function(event){
       const evtTarget = event.target;
       
@@ -105,7 +109,25 @@ function setCytoscape() {
     })
 
     cy.cxtmenu({
-      selector: 'node, edge',
+      selector: 'node',
+      commands: [
+        {
+          content: 'console show id',
+          select: function(ele){
+            console.log(ele.id())
+          }
+        },
+        {
+          content: 'connect to other',
+          select: function(ele){
+            eh.start(ele)
+          }
+        },
+      ]
+    })
+
+    cy.cxtmenu({
+      selector: 'edge',
       commands: [
         {
           content: 'console show id',
