@@ -108,6 +108,11 @@ function setCytoscape() {
       cxttapstartRenderedPosition = event.renderedPosition
     })
 
+    cy.on('ehcomplete', function (event, sourceNode, targetNode, addedEdge) {
+      console.log('ehcomplete')
+      cy.layout({ name: 'dagre' }).run()
+    })
+
     cy.cxtmenu({
       selector: 'node',
       commands: [
@@ -123,6 +128,12 @@ function setCytoscape() {
             eh.start(ele)
           }
         },
+        {
+          content: 'remove node',
+          select: function(ele){
+            cy.remove(ele)
+          }
+        },
       ]
     })
 
@@ -135,6 +146,12 @@ function setCytoscape() {
             console.log(ele.id())
           }
         },
+        {
+          content: 'remove edge',
+          select: function(ele){
+            cy.remove(ele)
+          }
+        },
       ]
     })
 
@@ -144,7 +161,6 @@ function setCytoscape() {
         {
           content: 'Add Node',
           select: function(event){
-            console.log( 'bg1' )
             cy.add({
               group: 'nodes',
               data: { label: 'cccc' },
