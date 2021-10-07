@@ -8,6 +8,7 @@
                 v-bind:key="node.id"
                 v-bind:node="node"
                 @update-size="updateNodeSize"
+                @update-content="updateNodeContent"
               ></node>
               <edge
                 v-for="edge in edges"
@@ -85,9 +86,9 @@ export default defineComponent({
       id: "root",
       layoutOptions: { 'elk.algorithm': 'layered' },
       children: [
-        { id: "n1", width: 0, height: 0 },
-        { id: "n2", width: 0, height: 0 },
-        { id: "n3", width: 0, height: 0 }
+        { id: "n1", width: 0, height: 0, content: "N1" },
+        { id: "n2", width: 0, height: 0, content: "N2" },
+        { id: "n3", width: 0, height: 0, content: "N3" }
       ],
       edges: [
         { id: "e1", sources: [ "n1" ], targets: [ "n2" ] },
@@ -95,11 +96,17 @@ export default defineComponent({
       ]
     }
 
+    const updateNodeContent = (id, content) => {
+      const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
+      graph_data.value.children[child_index].content = content
+    }
+
     return {
       canvasTransform,
       nodes,
       edges,
-      updateNodeSize
+      updateNodeSize,
+      updateNodeContent
     }
   },
 })
