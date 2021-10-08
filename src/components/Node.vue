@@ -2,16 +2,12 @@
   <g v-bind:id="node.id" v-bind:ref="node.id" v-bind:transform="`translate(${node.x},${node.y})`">
     <foreignObject width="1" height="1">
       <div ref="nodeContent" class="nodeContent" v-bind:width="node.width" v-bind:height="node.height">
-        <textarea
-          v-if="edit"
-          v-model="content"
+        <div
+          v-bind:contenteditable="edit"
+          @click="edit = true"
           @blur="updateContent"
           @keyup.enter="updateContent"
           v-focus
-        ></textarea>
-        <div
-          v-else
-          @click="edit = true"
         >{{ content }}</div>
       </div>
     </foreignObject>
@@ -60,8 +56,6 @@ export default defineComponent({
       console.log('onUpdated')
     })
 
-    // TODO: 考慮 用 div 模擬 textarea、setup 內容更加 function 化
-
     return {
       nodeContent,
       content,
@@ -72,7 +66,7 @@ export default defineComponent({
   },
   directives: {
     focus: {
-      mounted(el) {
+      updated(el) {
         console.log('focus')
         el.focus()
       }
