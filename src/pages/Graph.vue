@@ -16,6 +16,10 @@
                 v-bind:edge="edge"
               ></edge>
             </g>
+            <context-menu
+              v-bind:showContextmenu="showContextmenu"
+              v-bind:contextmenuTransform="contextmenuTransform"
+            ></context-menu>
         </svg>
     </div>
   </q-page>
@@ -27,12 +31,18 @@ import * as d3 from 'd3'
 import ELK from 'elkjs'
 import Node from 'components/Node.vue'
 import Edge from 'components/Edge.vue'
+import ContextMenu from 'components/ContextMenu.vue'
 
 function setD3() {
   const canvasTransform = ref({ x: 0, y: 0, scale: 1 })
+  const showContextmenu = ref(false)
+  const contextmenuTransform = ref({ x: 0, y: 0 })
   onMounted(() => {
     const zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', (event, d) => zoomed(event, d))
     d3.select('#graph').select('svg').call(zoom)
+    d3.select('#graph')
+      .select('svg')
+      .on('contextmenu', (event, d) => contextmenu(event, d))
   })
   function zoomed(event, d) {
     const container = d3.select('#canvas')
@@ -41,7 +51,26 @@ function setD3() {
     canvasTransform.value.y = event.transform.y
     canvasTransform.value.scale = event.transform.k
   }
-  return canvasTransform
+  function contextmenu(event, d) {
+    event.preventDefault()
+    showContextmenu.value = true
+    const svg = d3.select('#graph').select('svg').node()
+    const mouse = d3.pointer(event, svg)
+    const transform = { x: 0, y: 0 }
+    // transform.x =
+    //   (mouse[0] - canvasTransform.value.x) / canvasTransform.value.scale
+    // transform.y =
+    //   (mouse[1] - canvasTransform.value.y) / canvasTransform.value.scale
+    transform.x = mouse[0]
+    transform.y = mouse[1]
+    contextmenuTransform.value.x = transform.x
+    contextmenuTransform.value.y = transform.y
+  }
+  return {
+    canvasTransform,
+    showContextmenu,
+    contextmenuTransform
+  }
 }
 function setLayout() {
   const elk = new ELK()
@@ -76,10 +105,11 @@ export default defineComponent({
   name: 'Graph',
   components: {
     Node,
-    Edge
+    Edge,
+    ContextMenu
   },
   setup() {
-    const { canvasTransform } = setD3()
+    const { canvasTransform, showContextmenu, contextmenuTransform } = setD3()
     const { graph_data, nodes, edges, updateNodeSize } = setLayout()
 
     graph_data.value = {
@@ -103,6 +133,8 @@ export default defineComponent({
 
     return {
       canvasTransform,
+      showContextmenu,
+      contextmenuTransform,
       nodes,
       edges,
       updateNodeSize,

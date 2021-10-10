@@ -1,9 +1,10 @@
 <template>
   <g v-bind:id="node.id" v-bind:ref="node.id" v-bind:transform="`translate(${node.x},${node.y})`">
     <foreignObject width="1" height="1">
-      <div ref="nodeContent" class="nodeContent" v-bind:width="node.width" v-bind:height="node.height">
+      <div ref="nodeContent" class="nodeContent">
         <div
           v-bind:contenteditable="edit"
+          @keyup="updateSize"
           @click="edit = true"
           @blur="updateContent"
           @keyup.enter="updateContent"
