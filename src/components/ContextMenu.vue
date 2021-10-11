@@ -2,24 +2,11 @@
   <foreignObject width="1" height="1"
     v-if="showContextmenu"
     v-bind:transform="`translate(${contextmenuTransform.x},${contextmenuTransform.y})`"
+    v-click-outside="hideContextmenu"
   >
     <q-list bordered separator class="contextMenu">
-      <q-item clickable v-ripple>
-      <q-item-section>Single line item</q-item-section>
-      </q-item>
-
-      <q-item clickable v-ripple>
-      <q-item-section>
-          <q-item-label>Item with caption</q-item-label>
-          <q-item-label caption>Caption</q-item-label>
-      </q-item-section>
-      </q-item>
-
-      <q-item clickable v-ripple>
-      <q-item-section>
-          <q-item-label overline>OVERLINE</q-item-label>
-          <q-item-label>Item with caption</q-item-label>
-      </q-item-section>
+      <q-item clickable v-ripple @click="$emit('addNode'), hideContextmenu()">
+        <q-item-section>Add node</q-item-section>
       </q-item>
     </q-list>
   </foreignObject>
@@ -40,6 +27,33 @@ export default defineComponent({
       required: true
     }
   },
+  emits: [
+    'addNode',
+    'update:showContextmenu'
+  ],
+  setup(props, context) {
+    const hideContextmenu = () => {
+      context.emit('update:showContextmenu', false)
+    }
+    return { hideContextmenu }
+  },
+  directives: {
+    clickOutside: {
+      mounted(el, binding, vnode) {
+        el.clickOutsideEvent = function(event) {
+          // here I check that click was outside the el and his children
+          if (!(el == event.target || el.contains(event.target))) {
+            // and if it did, call method provided in attribute value
+            binding.value()
+          }
+        }
+        document.body.addEventListener('click', el.clickOutsideEvent)
+      },
+      unmounted(el) {
+        document.body.removeEventListener('click', el.clickOutsideEvent)
+      }
+    }
+  }
 })
 </script>
 

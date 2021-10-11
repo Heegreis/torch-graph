@@ -17,8 +17,9 @@
               ></edge>
             </g>
             <context-menu
-              v-bind:showContextmenu="showContextmenu"
+              v-model:showContextmenu="showContextmenu"
               v-bind:contextmenuTransform="contextmenuTransform"
+              @add-node="addNode"
             ></context-menu>
         </svg>
     </div>
@@ -98,7 +99,7 @@ function setLayout() {
     applyLayout()
   })
 
-  return { graph_data, nodes, edges, updateNodeSize }
+  return { graph_data, applyLayout, nodes, edges, updateNodeSize }
 }
 
 export default defineComponent({
@@ -110,7 +111,7 @@ export default defineComponent({
   },
   setup() {
     const { canvasTransform, showContextmenu, contextmenuTransform } = setD3()
-    const { graph_data, nodes, edges, updateNodeSize } = setLayout()
+    const { graph_data, applyLayout, nodes, edges, updateNodeSize } = setLayout()
 
     graph_data.value = {
       id: "root",
@@ -131,6 +132,12 @@ export default defineComponent({
       graph_data.value.children[child_index].content = content
     }
 
+    const addNode = () => {
+      const new_node = { id: "na", width: 0, height: 0, content: "NA" }
+      graph_data.value.children.push(new_node)
+      applyLayout()
+    }
+
     return {
       canvasTransform,
       showContextmenu,
@@ -138,7 +145,8 @@ export default defineComponent({
       nodes,
       edges,
       updateNodeSize,
-      updateNodeContent
+      updateNodeContent,
+      addNode
     }
   },
 })

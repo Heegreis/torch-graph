@@ -1,5 +1,5 @@
 <template>
-  <g v-bind:id="node.id" v-bind:ref="node.id" v-bind:transform="`translate(${node.x},${node.y})`">
+  <g v-bind:id="node.id" v-bind:ref="node.id" v-bind:transform="nodeTransform">
     <foreignObject width="1" height="1">
       <div ref="nodeContent" class="nodeContent">
         <div
@@ -24,6 +24,15 @@ export default defineComponent({
     node: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    nodeTransform() {
+      if ("x" in this.node) {
+        return `translate(${this.node.x},${this.node.y})`
+      } else {
+        return `translate(0,0)`
+      }
     }
   },
   emits: [
@@ -54,7 +63,6 @@ export default defineComponent({
 
     onUpdated(() => {
       updateSize()
-      console.log('onUpdated')
     })
 
     return {
@@ -68,7 +76,6 @@ export default defineComponent({
   directives: {
     focus: {
       updated(el) {
-        console.log('focus')
         el.focus()
       }
     }
