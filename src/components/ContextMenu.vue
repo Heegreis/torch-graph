@@ -5,8 +5,14 @@
     v-click-outside="hideContextmenu"
   >
     <q-list bordered separator class="contextMenu">
-      <q-item clickable v-ripple @click="$emit('addNode'), hideContextmenu()">
+      <!-- for background -->
+      <q-item v-if="contextmenuType == 'background'" clickable v-ripple @click="$emit('addNode'), hideContextmenu()">
         <q-item-section>Add node</q-item-section>
+      </q-item>
+
+      <!-- for node -->
+      <q-item v-if="contextmenuType == 'node'" clickable v-ripple @click="$emit('connect'), hideContextmenu()">
+        <q-item-section>connect</q-item-section>
       </q-item>
     </q-list>
   </foreignObject>
@@ -25,11 +31,16 @@ export default defineComponent({
     contextmenuTransform: {
       type: Object,
       required: true
+    },
+    contextmenuType: {
+      type: String,
+      required: true
     }
   },
   emits: [
     'addNode',
-    'update:showContextmenu'
+    'update:showContextmenu',
+    'connect'
   ],
   setup(props, context) {
     const hideContextmenu = () => {

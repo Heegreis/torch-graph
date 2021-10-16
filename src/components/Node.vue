@@ -5,10 +5,11 @@
         <div
           v-bind:contenteditable="edit"
           @keyup="updateSize"
-          @click="edit = true"
+          @click="clicked"
           @blur="updateContent"
           @keyup.enter="updateContent"
           v-focus
+          @contextmenu="$emit('selected', node.id)"
         >{{ content }}</div>
       </div>
     </foreignObject>
@@ -37,7 +38,8 @@ export default defineComponent({
   },
   emits: [
     'updateSize',
-    'updateContent'
+    'updateContent',
+    'selected'
   ],
   setup(props, context) {
     const nodeContent = ref()
@@ -65,12 +67,19 @@ export default defineComponent({
       updateSize()
     })
 
+    const clicked = () => {
+      // edit.value = true
+      // $emit('設定為要被連接的節點 selectedElement')
+      context.emit('selected', props.node.id)
+    }
+
     return {
       nodeContent,
       content,
       edit,
       updateSize,
-      updateContent
+      updateContent,
+      clicked
     }
   },
   directives: {

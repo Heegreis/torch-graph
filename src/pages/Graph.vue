@@ -2,27 +2,49 @@
   <q-page>
     <div id="graph">
         <svg>
-            <g id="canvas">
-              <node
-                v-for="node in nodes"
-                v-bind:key="node.id"
-                v-bind:node="node"
-                @update-size="updateNodeSize"
-                @update-content="updateNodeContent"
-              ></node>
-              <edge
-                v-for="edge in edges"
-                v-bind:key="edge.id"
-                v-bind:edge="edge"
-              ></edge>
-            </g>
-            <context-menu
-              v-model:showContextmenu="showContextmenu"
-              v-bind:contextmenuTransform="contextmenuTransform"
-              @add-node="addNode"
-            ></context-menu>
+          <defs>
+            <marker id="markerCircle" markerWidth="8" markerHeight="8" refX="5" refY="5">
+              <circle cx="5" cy="5" r="3" style="stroke: none; fill:#000000;"/>
+            </marker>
+            <marker id="markerArrow" markerWidth="13" markerHeight="13" refX="9" refY="6"
+                orient="auto">
+              <path d="M2,2 L2,11 L10,6 L2,2" style="fill: #000000;" />
+            </marker>
+          </defs>
+          <g id="canvas">
+            <node
+              v-for="node in nodes"
+              v-bind:key="node.id"
+              v-bind:node="node"
+              @update-size="updateNodeSize"
+              @update-content="updateNodeContent"
+              @selected="nodeSelected"
+            ></node>
+            <edge
+              v-for="edge in edges"
+              v-bind:key="edge.id"
+              v-bind:edge="edge"
+            ></edge>
+          </g>
+          <context-menu
+            v-model:showContextmenu="showContextmenu"
+            v-bind:contextmenuTransform="contextmenuTransform"
+            @add-node="addNode"
+            @connect="contextmenu_connect"
+            v-bind:contextmenuType="contextmenuType"
+          ></context-menu>
         </svg>
     </div>
+    <q-dialog v-model="qDialog_seamless" seamless position="bottom">
+      <q-card>
+        <q-card-section class="row items-center no-wrap">
+          <div>
+            <div class="text-weight-bold">點選要連接的Node</div>
+          </div>
+          <q-btn flat round icon="close" v-close-popup />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -37,6 +59,7 @@ import ContextMenu from 'components/ContextMenu.vue'
 function setD3() {
   const canvasTransform = ref({ x: 0, y: 0, scale: 1 })
   const showContextmenu = ref(false)
+  const contextmenuType = ref('background')
   const contextmenuTransform = ref({ x: 0, y: 0 })
   onMounted(() => {
     const zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', (event, d) => zoomed(event, d))
@@ -66,16 +89,65 @@ function setD3() {
     transform.y = mouse[1]
     contextmenuTransform.value.x = transform.x
     contextmenuTransform.value.y = transform.y
+
+    const eleTypes = {
+      background: { tag: ['svg'] },
+      node: { class: ['nodeContent'] },
+      path: { tag: ['path'] }
+    }
+    function getType(ele) {
+      for (const [type, selectors] of Object.entries(eleTypes)) {
+        for (const [selector, names] of Object.entries(selectors)) {
+          if (selector == 'tag') {
+            const eleName = ele.tagName
+            for (let index = 0; index < names.length; index++) {
+              const name = names[index]
+              if (eleName === name) {
+                return type
+              }
+            }
+          } else if (selector === 'class') {
+            let eleName = ''
+            if (typeof(ele.className) === 'object') {
+              eleName = ele.className.baseVal.split()
+            } else {
+              eleName = ele.className.split()
+            }
+            for (let index = 0; index < names.length; index++) {
+              const name = names[index]
+              if (eleName.includes(name)) {
+                return type
+              }
+            }
+          } else if (selector === 'id') {
+            const eleName = ele.getAttribute('id')
+            for (let index = 0; index < names.length; index++) {
+              const name = names[index]
+              if (eleName === name) {
+                return type
+              }
+            }
+          } else {
+            console.log('selector error')
+          }
+        }
+      }
+      return getType(ele.parentElement)
+    }
+
+    const mouseDoc = d3.pointer(event, document)
+    const elementMouseIsOver = document.elementFromPoint(mouseDoc[0], mouseDoc[1])
+    contextmenuType.value = getType(elementMouseIsOver)
   }
   return {
     canvasTransform,
     showContextmenu,
+    contextmenuType,
     contextmenuTransform
   }
 }
-function setLayout() {
+function setLayout(graph_data) {
   const elk = new ELK()
-  let graph_data = ref({})
   let nodes = ref([])
   let edges = ref([])
   
@@ -88,18 +160,61 @@ function setLayout() {
       .catch(console.error)
   }
 
-  const updateNodeSize = (id, size) => {
+  onMounted(() => {
+    applyLayout()
+  })
+
+  return { applyLayout, nodes, edges }
+}
+function graphOperations(graph_data, applyLayout, status, qDialog_seamless ) {
+  const selectedElement = ref('')
+  const connectSource = ref('')
+
+  function updateNodeSize(id, size) {
     const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
     graph_data.value.children[child_index].width = size.width
     graph_data.value.children[child_index].height = size.height
     applyLayout()
   }
 
-  onMounted(() => {
-    applyLayout()
-  })
+  function updateNodeContent(id, content) {
+    const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
+    graph_data.value.children[child_index].content = content
+  }
 
-  return { graph_data, applyLayout, nodes, edges, updateNodeSize }
+  function addNode() {
+    const new_node = { id: "na", width: 0, height: 0, content: "NA" }
+    graph_data.value.children.push(new_node)
+    applyLayout()
+  }
+
+  function addEdge (connectSource, connectTarget) {
+    const new_edge = { id: "ea", sources: [ connectSource ], targets: [ connectTarget ] }
+    graph_data.value.edges.push(new_edge)
+    applyLayout()
+  }
+
+  function nodeSelected(node_id) {
+    selectedElement.value = node_id
+    if (status.value === 'connect node') {
+      addEdge(connectSource.value, selectedElement.value)
+      selectedElement.value = ''
+      qDialog_seamless.value = false
+      status.value = 'normal'
+    }
+  }
+
+  return { updateNodeSize, updateNodeContent, addNode, addEdge, nodeSelected, selectedElement, connectSource }
+}
+function contextmenuActions(status, qDialog_seamless, connectSource, selectedElement) {
+  function contextmenu_connect () {
+    qDialog_seamless.value = true
+    connectSource.value = selectedElement.value
+    // selectedElement.value = ''
+    status.value = 'connect node'
+  }
+
+  return { contextmenu_connect }
 }
 
 export default defineComponent({
@@ -110,9 +225,9 @@ export default defineComponent({
     ContextMenu
   },
   setup() {
-    const { canvasTransform, showContextmenu, contextmenuTransform } = setD3()
-    const { graph_data, applyLayout, nodes, edges, updateNodeSize } = setLayout()
-
+    // 包成 loadGraph
+    const graph_data = ref({})
+    const qDialog_seamless = ref(false)
     graph_data.value = {
       id: "root",
       layoutOptions: { 'elk.algorithm': 'layered' },
@@ -126,18 +241,29 @@ export default defineComponent({
         { id: "e2", sources: [ "n1" ], targets: [ "n3" ] }
       ]
     }
+    const status = ref('normal')
+    const {
+      canvasTransform,
+      showContextmenu,
+      contextmenuType,
+      contextmenuTransform } = setD3()
+    const {
+      applyLayout,
+      nodes,
+      edges } = setLayout(graph_data)
+    const {
+      updateNodeSize,
+      updateNodeContent,
+      addNode,
+      addEdge,
+      nodeSelected,
+      selectedElement,
+      connectSource } = graphOperations(graph_data, applyLayout, status, qDialog_seamless )
+    const {
+      contextmenu_connect } = contextmenuActions(
+        status, qDialog_seamless, connectSource, selectedElement)
 
-    const updateNodeContent = (id, content) => {
-      const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
-      graph_data.value.children[child_index].content = content
-    }
-
-    const addNode = () => {
-      const new_node = { id: "na", width: 0, height: 0, content: "NA" }
-      graph_data.value.children.push(new_node)
-      applyLayout()
-    }
-
+    // 這些變數和function 可以試試分門別類包在不同obj
     return {
       canvasTransform,
       showContextmenu,
@@ -146,7 +272,13 @@ export default defineComponent({
       edges,
       updateNodeSize,
       updateNodeContent,
-      addNode
+      addNode,
+      contextmenuType,
+      selectedElement,
+      qDialog_seamless,
+      connectSource,
+      contextmenu_connect,
+      nodeSelected
     }
   },
 })
