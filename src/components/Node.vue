@@ -6,6 +6,7 @@
           v-bind:contenteditable="edit"
           @keyup="updateSize"
           @click="clicked"
+          @dblclick="edit = true"
           @blur="updateContent"
           @keyup.enter="updateContent"
           v-focus
@@ -68,8 +69,6 @@ export default defineComponent({
     })
 
     const clicked = () => {
-      // edit.value = true
-      // $emit('設定為要被連接的節點 selectedElement')
       context.emit('selected', props.node.id)
     }
 

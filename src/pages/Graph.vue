@@ -41,7 +41,7 @@
           <div>
             <div class="text-weight-bold">點選要連接的Node</div>
           </div>
-          <q-btn flat round icon="close" v-close-popup />
+          <q-btn flat round icon="close" v-close-popup @click="status = ''" />
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -62,7 +62,7 @@ function setD3() {
   const contextmenuType = ref('background')
   const contextmenuTransform = ref({ x: 0, y: 0 })
   onMounted(() => {
-    const zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', (event, d) => zoomed(event, d))
+    const zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', (event, d) => zoomed(event, d)).filter((event) => zoomFilter(event))
     d3.select('#graph').select('svg').call(zoom)
     d3.select('#graph')
       .select('svg')
@@ -74,6 +74,10 @@ function setD3() {
     canvasTransform.value.x = event.transform.x
     canvasTransform.value.y = event.transform.y
     canvasTransform.value.scale = event.transform.k
+  }
+  function zoomFilter(event) {
+    // disable drag on div contenteditable
+    return (!event.ctrlKey || event.type === 'wheel') && !event.button && !(event.type === 'dblclick') && !(event.target.contentEditable === 'true')
   }
   function contextmenu(event, d) {
     event.preventDefault()
@@ -226,8 +230,9 @@ export default defineComponent({
   },
   setup() {
     // 包成 loadGraph
-    const graph_data = ref({})
+    const status = ref('normal')
     const qDialog_seamless = ref(false)
+    const graph_data = ref({})
     graph_data.value = {
       id: "root",
       layoutOptions: { 'elk.algorithm': 'layered' },
@@ -241,7 +246,6 @@ export default defineComponent({
         { id: "e2", sources: [ "n1" ], targets: [ "n3" ] }
       ]
     }
-    const status = ref('normal')
     const {
       canvasTransform,
       showContextmenu,
@@ -278,7 +282,8 @@ export default defineComponent({
       qDialog_seamless,
       connectSource,
       contextmenu_connect,
-      nodeSelected
+      nodeSelected,
+      status
     }
   },
 })
