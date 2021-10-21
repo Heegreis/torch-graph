@@ -16,9 +16,9 @@
               v-for="node in nodes"
               v-bind:key="node.id"
               v-bind:node="node"
-              @update-size="updateNodeSize"
-              @update-content="updateNodeContent"
-              @selected="nodeSelected"
+              @update-size="graphOperations.updateNodeSize"
+              @update-content="graphOperations.updateNodeContent"
+              @selected="graphOperations.nodeSelected"
             ></node>
             <edge
               v-for="edge in edges"
@@ -29,8 +29,7 @@
           <context-menu
             v-model:showContextmenu="showContextmenu"
             v-bind:contextmenuTransform="contextmenuTransform"
-            @add-node="addNode"
-            @connect="contextmenu_connect"
+            @action="contextmenuActions"
             v-bind:contextmenuType="contextmenuType"
           ></context-menu>
         </svg>
@@ -43,6 +42,19 @@
           </div>
           <q-btn flat round icon="close" v-close-popup @click="status = ''" />
         </q-card-section>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="qDialog_confirm" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <span class="q-ml-sm">The node connected edges.</span>
+          <span class="q-ml-sm">The edges will be removed.</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Delete" color="primary" v-close-popup @click="contextmenuActions('deleteNodeAndEdges')" />
+        </q-card-actions>
       </q-card>
     </q-dialog>
   </q-page>
@@ -170,7 +182,7 @@ function setLayout(graph_data) {
 
   return { applyLayout, nodes, edges }
 }
-function graphOperations(graph_data, applyLayout, status, qDialog_seamless ) {
+function setGraphOperations(graph_data, applyLayout, status, qDialog_seamless, qDialog_confirm ) {
   const selectedElement = ref('')
   const connectSource = ref('')
 
@@ -198,6 +210,31 @@ function graphOperations(graph_data, applyLayout, status, qDialog_seamless ) {
     applyLayout()
   }
 
+  function deleteNode() {
+    const node_id = selectedElement.value
+    if (_searchEdgesIndexesByNode(node_id).length > 0) {
+      // 要轉去刪除node和edge
+      qDialog_confirm.value = true
+    } else {
+      const child_index = graph_data.value.children.findIndex((obj) => obj.id == node_id)
+      graph_data.value.children.splice(child_index, 1)
+      applyLayout()
+    }
+  }
+
+  function deleteNodeAndEdges() {
+    const node_id = selectedElement.value
+    const child_index = graph_data.value.children.findIndex((obj) => obj.id == node_id)
+    graph_data.value.children.splice(child_index, 1)
+
+    _searchEdgesIndexesByNode(node_id).forEach((index) => {
+      graph_data.value.edges.splice(index, 1)
+    })
+
+    applyLayout()
+    qDialog_confirm.value = false
+  }
+
   function nodeSelected(node_id) {
     selectedElement.value = node_id
     if (status.value === 'connect node') {
@@ -208,17 +245,39 @@ function graphOperations(graph_data, applyLayout, status, qDialog_seamless ) {
     }
   }
 
-  return { updateNodeSize, updateNodeContent, addNode, addEdge, nodeSelected, selectedElement, connectSource }
+  function _searchEdgesIndexesByNode(node_id) {
+    const edges = graph_data.value.edges
+    let indexes = [], i
+    for(i = 0; i < edges.length; i++) {
+      if (edges[i].sources.includes(node_id) || edges[i].targets.includes(node_id)) {
+        indexes.push(i)
+      }
+    }
+    return indexes
+  }
+
+  return { updateNodeSize, updateNodeContent, addNode, addEdge, nodeSelected, selectedElement, connectSource, deleteNode, deleteNodeAndEdges }
 }
-function contextmenuActions(status, qDialog_seamless, connectSource, selectedElement) {
-  function contextmenu_connect () {
+function setContextmenuActions(status, qDialog_seamless, graphOperations) {
+  function connect() {
     qDialog_seamless.value = true
-    connectSource.value = selectedElement.value
+    graphOperations.connectSource.value = graphOperations.selectedElement.value
     // selectedElement.value = ''
     status.value = 'connect node'
   }
 
-  return { contextmenu_connect }
+  const actions = {
+    'addNode': graphOperations.addNode,
+    'deleteNode': graphOperations.deleteNode,
+    'deleteNodeAndEdges': graphOperations.deleteNodeAndEdges,
+    connect,
+  }
+
+  function contextmenuActions(action) {
+    actions[action]()
+  }
+
+  return { contextmenuActions }
 }
 
 export default defineComponent({
@@ -232,10 +291,11 @@ export default defineComponent({
     // 包成 loadGraph
     const status = ref('normal')
     const qDialog_seamless = ref(false)
+    const qDialog_confirm = ref(false)
     const graph_data = ref({})
     graph_data.value = {
       id: "root",
-      layoutOptions: { 'elk.algorithm': 'layered' },
+      layoutOptions: { 'elk.algorithm': 'layered', 'nodePlacement.strategy': 'SIMPLE', 'elk.direction': 'DOWN' },
       children: [
         { id: "n1", width: 0, height: 0, content: "N1" },
         { id: "n2", width: 0, height: 0, content: "N2" },
@@ -255,34 +315,22 @@ export default defineComponent({
       applyLayout,
       nodes,
       edges } = setLayout(graph_data)
-    const {
-      updateNodeSize,
-      updateNodeContent,
-      addNode,
-      addEdge,
-      nodeSelected,
-      selectedElement,
-      connectSource } = graphOperations(graph_data, applyLayout, status, qDialog_seamless )
-    const {
-      contextmenu_connect } = contextmenuActions(
-        status, qDialog_seamless, connectSource, selectedElement)
+    const graphOperations = setGraphOperations(graph_data, applyLayout, status, qDialog_seamless, qDialog_confirm )
+    const { contextmenuActions } = setContextmenuActions(
+        status, qDialog_seamless, graphOperations)
 
     // 這些變數和function 可以試試分門別類包在不同obj
     return {
+      graphOperations,
+      contextmenuActions,
       canvasTransform,
       showContextmenu,
       contextmenuTransform,
       nodes,
       edges,
-      updateNodeSize,
-      updateNodeContent,
-      addNode,
       contextmenuType,
-      selectedElement,
       qDialog_seamless,
-      connectSource,
-      contextmenu_connect,
-      nodeSelected,
+      qDialog_confirm,
       status
     }
   },

@@ -9,7 +9,7 @@
       <q-item
         v-if="contextmenuType == 'background'"
         clickable v-ripple
-        @click="$emit('addNode'), hideContextmenu()"
+        @click="$emit('action', 'addNode'), hideContextmenu()"
       >
         <q-item-section>Add node</q-item-section>
       </q-item>
@@ -18,9 +18,16 @@
       <q-item
         v-if="contextmenuType == 'node'"
         clickable v-ripple
-        @click="$emit('connect'), hideContextmenu()"
+        @click="$emit('action', 'connect'), hideContextmenu()"
       >
-        <q-item-section>connect</q-item-section>
+        <q-item-section>Connect</q-item-section>
+      </q-item>
+      <q-item
+        v-if="contextmenuType == 'node'"
+        clickable v-ripple
+        @click="$emit('action', 'deleteNode'), hideContextmenu()"
+      >
+        <q-item-section>Delete node</q-item-section>
       </q-item>
     </q-list>
   </foreignObject>
@@ -46,9 +53,8 @@ export default defineComponent({
     }
   },
   emits: [
-    'addNode',
     'update:showContextmenu',
-    'connect'
+    'action'
   ],
   setup(props, context) {
     const hideContextmenu = () => {
