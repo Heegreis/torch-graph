@@ -29,6 +29,15 @@
       >
         <q-item-section>Delete node</q-item-section>
       </q-item>
+
+      <!-- for edge -->
+      <q-item
+        v-if="contextmenuType == 'edge'"
+        clickable v-ripple
+        @click="$emit('action', 'deleteEdge'), hideContextmenu()"
+      >
+        <q-item-section>Delete edge</q-item-section>
+      </q-item>
     </q-list>
   </foreignObject>
 </template>

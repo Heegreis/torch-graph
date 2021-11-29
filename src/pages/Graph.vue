@@ -16,6 +16,7 @@
               v-for="node in nodes"
               v-bind:key="node.id"
               v-bind:node="node"
+              v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
               @update-size="graphOperations.updateNodeSize"
               @update-content="graphOperations.updateNodeContent"
               @selected="graphOperations.nodeSelected"
@@ -24,6 +25,7 @@
               v-for="edge in edges"
               v-bind:key="edge.id"
               v-bind:edge="edge"
+              v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
             ></edge>
           </g>
           <context-menu
@@ -62,223 +64,13 @@
 
 <script>
 import { defineComponent, ref, onMounted } from 'vue'
-import * as d3 from 'd3'
-import ELK from 'elkjs'
 import Node from 'components/Node.vue'
 import Edge from 'components/Edge.vue'
 import ContextMenu from 'components/ContextMenu.vue'
-
-function setD3() {
-  const canvasTransform = ref({ x: 0, y: 0, scale: 1 })
-  const showContextmenu = ref(false)
-  const contextmenuType = ref('background')
-  const contextmenuTransform = ref({ x: 0, y: 0 })
-  onMounted(() => {
-    const zoom = d3.zoom().scaleExtent([1, 10]).on('zoom', (event, d) => zoomed(event, d)).filter((event) => zoomFilter(event))
-    d3.select('#graph').select('svg').call(zoom)
-    d3.select('#graph')
-      .select('svg')
-      .on('contextmenu', (event, d) => contextmenu(event, d))
-  })
-  function zoomed(event, d) {
-    const container = d3.select('#canvas')
-    container.attr('transform', event.transform)
-    canvasTransform.value.x = event.transform.x
-    canvasTransform.value.y = event.transform.y
-    canvasTransform.value.scale = event.transform.k
-  }
-  function zoomFilter(event) {
-    // disable drag on div contenteditable
-    return (!event.ctrlKey || event.type === 'wheel') && !event.button && !(event.type === 'dblclick') && !(event.target.contentEditable === 'true')
-  }
-  function contextmenu(event, d) {
-    event.preventDefault()
-    showContextmenu.value = true
-    const svg = d3.select('#graph').select('svg').node()
-    const mouse = d3.pointer(event, svg)
-    const transform = { x: 0, y: 0 }
-    // transform.x =
-    //   (mouse[0] - canvasTransform.value.x) / canvasTransform.value.scale
-    // transform.y =
-    //   (mouse[1] - canvasTransform.value.y) / canvasTransform.value.scale
-    transform.x = mouse[0]
-    transform.y = mouse[1]
-    contextmenuTransform.value.x = transform.x
-    contextmenuTransform.value.y = transform.y
-
-    const eleTypes = {
-      background: { tag: ['svg'] },
-      node: { class: ['nodeContent'] },
-      path: { tag: ['path'] }
-    }
-    function getType(ele) {
-      for (const [type, selectors] of Object.entries(eleTypes)) {
-        for (const [selector, names] of Object.entries(selectors)) {
-          if (selector == 'tag') {
-            const eleName = ele.tagName
-            for (let index = 0; index < names.length; index++) {
-              const name = names[index]
-              if (eleName === name) {
-                return type
-              }
-            }
-          } else if (selector === 'class') {
-            let eleName = ''
-            if (typeof(ele.className) === 'object') {
-              eleName = ele.className.baseVal.split()
-            } else {
-              eleName = ele.className.split()
-            }
-            for (let index = 0; index < names.length; index++) {
-              const name = names[index]
-              if (eleName.includes(name)) {
-                return type
-              }
-            }
-          } else if (selector === 'id') {
-            const eleName = ele.getAttribute('id')
-            for (let index = 0; index < names.length; index++) {
-              const name = names[index]
-              if (eleName === name) {
-                return type
-              }
-            }
-          } else {
-            console.log('selector error')
-          }
-        }
-      }
-      return getType(ele.parentElement)
-    }
-
-    const mouseDoc = d3.pointer(event, document)
-    const elementMouseIsOver = document.elementFromPoint(mouseDoc[0], mouseDoc[1])
-    contextmenuType.value = getType(elementMouseIsOver)
-  }
-  return {
-    canvasTransform,
-    showContextmenu,
-    contextmenuType,
-    contextmenuTransform
-  }
-}
-function setLayout(graph_data) {
-  const elk = new ELK()
-  let nodes = ref([])
-  let edges = ref([])
-  
-  function applyLayout() {
-    elk.layout(graph_data.value)
-      .then((graph_data_layouted) => {
-        nodes.value = graph_data_layouted.children
-        edges.value = graph_data_layouted.edges
-      })
-      .catch(console.error)
-  }
-
-  onMounted(() => {
-    applyLayout()
-  })
-
-  return { applyLayout, nodes, edges }
-}
-function setGraphOperations(graph_data, applyLayout, status, qDialog_seamless, qDialog_confirm ) {
-  const selectedElement = ref('')
-  const connectSource = ref('')
-
-  function updateNodeSize(id, size) {
-    const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
-    graph_data.value.children[child_index].width = size.width
-    graph_data.value.children[child_index].height = size.height
-    applyLayout()
-  }
-
-  function updateNodeContent(id, content) {
-    const child_index = graph_data.value.children.findIndex((obj) => obj.id == id)
-    graph_data.value.children[child_index].content = content
-  }
-
-  function addNode() {
-    const new_node = { id: "na", width: 0, height: 0, content: "NA" }
-    graph_data.value.children.push(new_node)
-    applyLayout()
-  }
-
-  function addEdge (connectSource, connectTarget) {
-    const new_edge = { id: "ea", sources: [ connectSource ], targets: [ connectTarget ] }
-    graph_data.value.edges.push(new_edge)
-    applyLayout()
-  }
-
-  function deleteNode() {
-    const node_id = selectedElement.value
-    if (_searchEdgesIndexesByNode(node_id).length > 0) {
-      // 要轉去刪除node和edge
-      qDialog_confirm.value = true
-    } else {
-      const child_index = graph_data.value.children.findIndex((obj) => obj.id == node_id)
-      graph_data.value.children.splice(child_index, 1)
-      applyLayout()
-    }
-  }
-
-  function deleteNodeAndEdges() {
-    const node_id = selectedElement.value
-    const child_index = graph_data.value.children.findIndex((obj) => obj.id == node_id)
-    graph_data.value.children.splice(child_index, 1)
-
-    _searchEdgesIndexesByNode(node_id).forEach((index) => {
-      graph_data.value.edges.splice(index, 1)
-    })
-
-    applyLayout()
-    qDialog_confirm.value = false
-  }
-
-  function nodeSelected(node_id) {
-    selectedElement.value = node_id
-    if (status.value === 'connect node') {
-      addEdge(connectSource.value, selectedElement.value)
-      selectedElement.value = ''
-      qDialog_seamless.value = false
-      status.value = 'normal'
-    }
-  }
-
-  function _searchEdgesIndexesByNode(node_id) {
-    const edges = graph_data.value.edges
-    let indexes = [], i
-    for(i = 0; i < edges.length; i++) {
-      if (edges[i].sources.includes(node_id) || edges[i].targets.includes(node_id)) {
-        indexes.push(i)
-      }
-    }
-    return indexes
-  }
-
-  return { updateNodeSize, updateNodeContent, addNode, addEdge, nodeSelected, selectedElement, connectSource, deleteNode, deleteNodeAndEdges }
-}
-function setContextmenuActions(status, qDialog_seamless, graphOperations) {
-  function connect() {
-    qDialog_seamless.value = true
-    graphOperations.connectSource.value = graphOperations.selectedElement.value
-    // selectedElement.value = ''
-    status.value = 'connect node'
-  }
-
-  const actions = {
-    'addNode': graphOperations.addNode,
-    'deleteNode': graphOperations.deleteNode,
-    'deleteNodeAndEdges': graphOperations.deleteNodeAndEdges,
-    connect,
-  }
-
-  function contextmenuActions(action) {
-    actions[action]()
-  }
-
-  return { contextmenuActions }
-}
+import setD3 from 'components/models/d3'
+import setLayout from 'components/models/layout'
+import setGraphOperations from 'components/models/graphOperations'
+import setContextmenuActions from 'components/models/contextmenuActions'
 
 export default defineComponent({
   name: 'Graph',
@@ -295,15 +87,35 @@ export default defineComponent({
     const graph_data = ref({})
     graph_data.value = {
       id: "root",
-      layoutOptions: { 'elk.algorithm': 'layered', 'nodePlacement.strategy': 'SIMPLE', 'elk.direction': 'DOWN' },
+      layoutOptions: { 'elk.algorithm': 'layered', 'nodePlacement.strategy': 'SIMPLE', 'elk.direction': 'DOWN', 'hierarchyHandling': 'INCLUDE_CHILDREN' },
       children: [
-        { id: "n1", width: 0, height: 0, content: "N1" },
-        { id: "n2", width: 0, height: 0, content: "N2" },
-        { id: "n3", width: 0, height: 0, content: "N3" }
+        { id: "n1", width: 0, height: 0, content: "N1", nodeContent_width: 0, nodeContent_height: 0 },
+        { id: "n2", width: 0, height: 0, content: "N2", nodeContent_width: 0, nodeContent_height: 0 },
+        { id: "n3", width: 0, height: 0, content: "N3", nodeContent_width: 0, nodeContent_height: 0,
+          children: [
+            { id: "n31", width: 0, height: 0, content: "N3 1", nodeContent_width: 0, nodeContent_height: 0 ,
+              children: [
+                { id: "n311", width: 0, height: 0, content: "N3 1 1", nodeContent_width: 0, nodeContent_height: 0 },
+                { id: "n312", width: 0, height: 0, content: "N3 1 2", nodeContent_width: 0, nodeContent_height: 0 },
+                { id: "n313", width: 0, height: 0, content: "N3 1 3", nodeContent_width: 0, nodeContent_height: 0 },
+              ],
+              edges: [
+                { id: "e311", sources: [ "n311" ], targets: [ "n312" ] },
+                { id: "e312", sources: [ "n311" ], targets: [ "n313" ] },
+              ]
+            },
+            { id: "n32", width: 0, height: 0, content: "N3 2", nodeContent_width: 0, nodeContent_height: 0 },
+            { id: "n33", width: 0, height: 0, content: "N3 3", nodeContent_width: 0, nodeContent_height: 0 },
+          ],
+          edges: [
+            { id: "e31", sources: [ "n31" ], targets: [ "n32" ] },
+            { id: "e32", sources: [ "n31" ], targets: [ "n33" ] },
+          ]
+        }
       ],
       edges: [
         { id: "e1", sources: [ "n1" ], targets: [ "n2" ] },
-        { id: "e2", sources: [ "n1" ], targets: [ "n3" ] }
+        { id: "e2", sources: [ "n1" ], targets: [ "n3" ] },
       ]
     }
     const {
