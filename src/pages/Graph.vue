@@ -121,6 +121,7 @@ export default defineComponent({
     }
     const {
       canvasTransform,
+      selectedElement,
       showContextmenu,
       contextmenuType,
       contextmenuTransform } = setD3()
@@ -128,7 +129,7 @@ export default defineComponent({
       applyLayout,
       nodes,
       edges } = setLayout(graph_data)
-    const graphOperations = setGraphOperations(graph_data, applyLayout, status, qDialog_seamless, qDialog_confirm )
+    const graphOperations = setGraphOperations(graph_data, applyLayout, selectedElement, status, qDialog_seamless, qDialog_confirm )
     const { contextmenuActions } = setContextmenuActions(
         status, qDialog_seamless, graphOperations)
 

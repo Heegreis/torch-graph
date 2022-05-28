@@ -1,5 +1,6 @@
 <template>
   <path ref="nodePath"
+    v-bind:id="edge.id"
     v-bind:d="pathData"
     fill="none"
     stroke="black"

@@ -1,8 +1,7 @@
 import { defineComponent, ref, onMounted } from 'vue'
 
 
-export default function setGraphOperations(graph_data, applyLayout, status, qDialog_seamless, qDialog_confirm ) {
-  const selectedElement = ref('')
+export default function setGraphOperations(graph_data, applyLayout, selectedElement, status, qDialog_seamless, qDialog_confirm ) {
   const connectSource = ref('')
 
   function nodeSelected(node_id) {
@@ -53,6 +52,7 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
       result[2].splice(result[3], 1)
       applyLayout()
     }
+    console.log(graph_data.value)
   }
   function deleteNodeAndEdges() {
     const node_id = selectedElement.value
@@ -67,8 +67,8 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
   }
   function deleteEdge() {
     const edge_id = selectedElement.value
-    const child_index = graph_data.value.edges.findIndex((obj) => obj.id == edge_id)
-    graph_data.value.edges.splice(child_index, 1)
+    let result = _searchGraph(graph_data.value, 'id', edge_id)
+    result[2].splice(result[3], 1)
     applyLayout()
   }
 

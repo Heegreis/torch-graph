@@ -4,6 +4,7 @@ import * as d3 from 'd3'
 
 export default function setD3() {
   const canvasTransform = ref({ x: 0, y: 0, scale: 1 })
+  const selectedElement = ref('')
   const showContextmenu = ref(false)
   const contextmenuType = ref('background')
   const contextmenuTransform = ref({ x: 0, y: 0 })
@@ -81,12 +82,24 @@ export default function setD3() {
       return getType(ele.parentElement)
     }
 
+    function getID(ele) {
+      if (ele.getAttribute('id')) {
+        return ele.getAttribute('id')
+      } else if (ele.tagName === 'svg') {
+        return null
+      } else {
+        return getID(ele.parentElement)
+      }
+    }
+
     const mouseDoc = d3.pointer(event, document)
     const elementMouseIsOver = document.elementFromPoint(mouseDoc[0], mouseDoc[1])
     contextmenuType.value = getType(elementMouseIsOver)
+    selectedElement.value = getID(elementMouseIsOver)
   }
   return {
     canvasTransform,
+    selectedElement,
     showContextmenu,
     contextmenuType,
     contextmenuTransform

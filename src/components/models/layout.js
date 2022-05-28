@@ -6,11 +6,28 @@ export default function setLayout(graph_data) {
   const elk = new ELK()
   let nodes = ref(graph_data.value.children)
   let edges = ref(graph_data.value.edges)
-  
+
+  function _deleteSections(obj, parentObj=null, index=null) {
+    // avoid the refreshed edges path not right
+    if ('sections' in obj) {
+      delete obj['sections']
+    }
+
+    const keys = Object.keys(obj); // add this line to iterate over the keys
+    for (let i = 0, len = keys.length; i < len; i++) {
+      const k = keys[i]; // use this key for iteration, instead of index "i"
+
+      // add "obj[k] &&" to ignore null values
+      if (obj[k] && typeof obj[k] == 'object') {
+        var found = _deleteSections(obj[k], obj, k)
+      }
+    }
+  }
+
   async function applyElkLayout(graph) {
     await elk.layout(graph)
   }
-  
+
   async function loopGraph(graph) {
     if ('children' in graph) {
       for (let index = 0; index < graph.children.length; index++) {
@@ -46,6 +63,7 @@ export default function setLayout(graph_data) {
   }
 
   async function applyLayout() {
+    _deleteSections(graph_data.value)
     await loopGraph(graph_data.value)
     nodes.value = graph_data.value.children
     edges.value = graph_data.value.edges
