@@ -26,6 +26,7 @@
               v-bind:key="edge.id"
               v-bind:edge="edge"
               v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
+              @selected="graphOperations.edgeSelected"
             ></edge>
           </g>
           <context-menu

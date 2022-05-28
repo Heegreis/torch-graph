@@ -15,6 +15,10 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
     }
     console.log(selectedElement.value)
   }
+  function edgeSelected(edge_id) {
+    selectedElement.value = edge_id
+    console.log(selectedElement.value)
+  }
   function updateNodeSize(id, size) {
     // let { node, key, children } = _searchGraph(graph_data.value, 'id', id)
     let result = _searchGraph(graph_data.value, 'id', id)
@@ -67,13 +71,13 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
     graph_data.value.edges.splice(child_index, 1)
     applyLayout()
   }
-  
+
   function _addEdge (connectSource, connectTarget) {
     const new_edge = { id: "ea", sources: [ connectSource ], targets: [ connectTarget ] }
     graph_data.value.edges.push(new_edge)
     applyLayout()
   }
-  
+
   function _searchEdgeByNode(obj, node_id, parentObj=null, index=null) {
     const keys = Object.keys(obj); // add this line to iterate over the keys
 
@@ -96,7 +100,7 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
           return found
         }
       }
-      
+
     }
   }
   function _deleteEdgesByNode(node_id) {
@@ -133,5 +137,5 @@ export default function setGraphOperations(graph_data, applyLayout, status, qDia
 
   return {
     selectedElement, connectSource,
-    nodeSelected, updateNodeSize, updateNodeContent, addNode, deleteNode, deleteNodeAndEdges, deleteEdge }
+    nodeSelected, edgeSelected, updateNodeSize, updateNodeContent, addNode, deleteNode, deleteNodeAndEdges, deleteEdge }
 }
