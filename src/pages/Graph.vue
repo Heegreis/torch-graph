@@ -1,65 +1,82 @@
 <template>
   <q-page>
-    <div id="graph">
-        <svg>
-          <defs>
-            <marker id="markerCircle" markerWidth="8" markerHeight="8" refX="5" refY="5">
-              <circle cx="5" cy="5" r="3" style="stroke: none; fill:#000000;"/>
-            </marker>
-            <marker id="markerArrow" markerWidth="13" markerHeight="13" refX="9" refY="6"
-                orient="auto">
-              <path d="M2,2 L2,11 L10,6 L2,2" style="fill: #000000;" />
-            </marker>
-          </defs>
-          <g id="canvas">
-            <node
-              v-for="node in nodes"
-              v-bind:key="node.id"
-              v-bind:node="node"
-              v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
-              @update-size="graphOperations.updateNodeSize"
-              @update-content="graphOperations.updateNodeContent"
-              @selected="graphOperations.nodeSelected"
-            ></node>
-            <edge
-              v-for="edge in edges"
-              v-bind:key="edge.id"
-              v-bind:edge="edge"
-              v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
-              @selected="graphOperations.edgeSelected"
-            ></edge>
-          </g>
-          <context-menu
-            v-model:showContextmenu="showContextmenu"
-            v-bind:contextmenuTransform="contextmenuTransform"
-            @action="contextmenuActions"
-            v-bind:contextmenuType="contextmenuType"
-          ></context-menu>
-        </svg>
-    </div>
-    <q-dialog v-model="qDialog_seamless" seamless position="bottom">
-      <q-card>
-        <q-card-section class="row items-center no-wrap">
-          <div>
-            <div class="text-weight-bold">點選要連接的Node</div>
+    <q-splitter v-model="splitterModel" style="min-height: inherit">
+      <template v-slot:before>
+        <div style="height: calc(100vh - 50px);">
+          <div style="height: calc(100vh - 100px); overflow-y: scroll;">
+            <q-input
+              v-model="text"
+              filled
+              type="textarea"
+              autogrow
+            />
           </div>
-          <q-btn flat round icon="close" v-close-popup @click="status = ''" />
-        </q-card-section>
-      </q-card>
-    </q-dialog>
-    <q-dialog v-model="qDialog_confirm" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <span class="q-ml-sm">The node connected edges.</span>
-          <span class="q-ml-sm">The edges will be removed.</span>
-        </q-card-section>
+          <q-btn>123</q-btn>
+        </div>
+      </template>
+      <template v-slot:after>
+        <div id="graph">
+          <svg>
+            <defs>
+              <marker id="markerCircle" markerWidth="8" markerHeight="8" refX="5" refY="5">
+                <circle cx="5" cy="5" r="3" style="stroke: none; fill:#000000;"/>
+              </marker>
+              <marker id="markerArrow" markerWidth="13" markerHeight="13" refX="9" refY="6"
+                  orient="auto">
+                <path d="M2,2 L2,11 L10,6 L2,2" style="fill: #000000;" />
+              </marker>
+            </defs>
+            <g id="canvas">
+              <node
+                v-for="node in nodes"
+                v-bind:key="node.id"
+                v-bind:node="node"
+                v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
+                @update-size="graphOperations.updateNodeSize"
+                @update-content="graphOperations.updateNodeContent"
+                @selected="graphOperations.nodeSelected"
+              ></node>
+              <edge
+                v-for="edge in edges"
+                v-bind:key="edge.id"
+                v-bind:edge="edge"
+                v-bind:margin="{top: 0, right: 0, bottom: 0, left: 0}"
+                @selected="graphOperations.edgeSelected"
+              ></edge>
+            </g>
+            <context-menu
+              v-model:showContextmenu="showContextmenu"
+              v-bind:contextmenuTransform="contextmenuTransform"
+              @action="contextmenuActions"
+              v-bind:contextmenuType="contextmenuType"
+            ></context-menu>
+          </svg>
+        </div>
+        <q-dialog v-model="qDialog_seamless" seamless position="bottom">
+          <q-card>
+            <q-card-section class="row items-center no-wrap">
+              <div>
+                <div class="text-weight-bold">點選要連接的Node</div>
+              </div>
+              <q-btn flat round icon="close" v-close-popup @click="status = ''" />
+            </q-card-section>
+          </q-card>
+        </q-dialog>
+        <q-dialog v-model="qDialog_confirm" persistent>
+          <q-card>
+            <q-card-section class="row items-center">
+              <span class="q-ml-sm">The node connected edges.</span>
+              <span class="q-ml-sm">The edges will be removed.</span>
+            </q-card-section>
 
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="primary" v-close-popup @click="contextmenuActions('deleteNodeAndEdges')" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+            <q-card-actions align="right">
+              <q-btn flat label="Cancel" color="primary" v-close-popup />
+              <q-btn flat label="Delete" color="primary" v-close-popup @click="contextmenuActions('deleteNodeAndEdges')" />
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
+      </template>
+    </q-splitter>
   </q-page>
 </template>
 
@@ -135,6 +152,8 @@ export default defineComponent({
 
     // 這些變數和function 可以試試分門別類包在不同obj
     return {
+      splitterModel: ref(50),
+      text: ref(''),
       graphOperations,
       contextmenuActions,
       canvasTransform,
@@ -161,5 +180,10 @@ export default defineComponent({
 svg {
   width: 100%;
   flex: 1;
+}
+</style>
+<style lang="scss">
+.q-splitter__panel {
+  min-height: inherit;
 }
 </style>
