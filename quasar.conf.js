@@ -9,6 +9,7 @@
 /* eslint-env node */
 const ESLintPlugin = require('eslint-webpack-plugin')
 const { configure } = require('quasar/wrappers');
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin')
 
 module.exports = configure(function (ctx) {
   return {
@@ -70,6 +71,10 @@ module.exports = configure(function (ctx) {
       chainWebpack (chain) {
         chain.plugin('eslint-webpack-plugin')
           .use(ESLintPlugin, [{ extensions: [ 'js', 'vue' ] }])
+      },
+      chainWebpack (chain) {
+        chain.plugin('monaco-editor-webpack-plugin')
+          .use(MonacoWebpackPlugin)
       },
     },
 

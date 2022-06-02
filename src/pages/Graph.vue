@@ -3,15 +3,8 @@
     <q-splitter v-model="splitterModel" style="min-height: inherit">
       <template v-slot:before>
         <div style="height: calc(100vh - 50px);">
-          <div style="height: calc(100vh - 100px); overflow-y: scroll;">
-            <q-input
-              v-model="text"
-              filled
-              type="textarea"
-              autogrow
-            />
-          </div>
-          <q-btn>123</q-btn>
+          <div ref="monaco_editor_container" style="height: calc(100vh - 100px)"></div>
+          <q-btn @click="editor_getValue">123</q-btn>
         </div>
       </template>
       <template v-slot:after>
@@ -89,6 +82,7 @@ import setD3 from 'components/models/d3'
 import setLayout from 'components/models/layout'
 import setGraphOperations from 'components/models/graphOperations'
 import setContextmenuActions from 'components/models/contextmenuActions'
+import * as monaco from 'monaco-editor'
 
 export default defineComponent({
   name: 'Graph',
@@ -98,6 +92,20 @@ export default defineComponent({
     ContextMenu
   },
   setup() {
+    const monaco_editor_container = ref(null)
+    let monaco_editor = null
+    onMounted(() => {
+      monaco_editor = monaco.editor.create(monaco_editor_container.value, {
+        value: 'WIP: code edit mod',
+        language: 'python',
+        automaticLayout: true,
+        theme: 'vs-dark'
+      })
+    })
+    function editor_getValue(){
+      console.log(monaco_editor.getValue())
+    }
+
     // 包成 loadGraph
     const status = ref('normal')
     const qDialog_seamless = ref(false)
@@ -153,7 +161,8 @@ export default defineComponent({
     // 這些變數和function 可以試試分門別類包在不同obj
     return {
       splitterModel: ref(50),
-      text: ref(''),
+      monaco_editor_container,
+      editor_getValue,
       graphOperations,
       contextmenuActions,
       canvasTransform,

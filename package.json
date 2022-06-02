@@ -15,6 +15,8 @@
     "core-js": "^3.6.5",
     "d3": "^7.0.3",
     "elkjs": "^0.7.1",
+    "monaco-editor": "^0.33.0",
+    "monaco-editor-webpack-plugin": "^7.0.1",
     "quasar": "^2.0.0",
     "vue-i18n": "^9.0.0",
     "vuex": "^4.0.1",
