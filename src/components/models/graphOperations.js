@@ -71,13 +71,24 @@ export default function setGraphOperations(graph_data, applyLayout, selectedElem
     result[2].splice(result[3], 1)
     applyLayout()
   }
+  function collapseNode(node_id, action) {
+    let result = _searchGraph(graph_data.value, 'id', node_id)
+    if (action == 'collapse') {
+      _renameObject(result[0], 'children', '_children')
+      _renameObject(result[0], 'edges', '_edges')
+    }
+    if (action == 'expand') {
+      _renameObject(result[0], '_children', 'children')
+      _renameObject(result[0], '_edges', 'edges')
+    }
+    setTimeout(() => applyLayout(), 200)
+  }
 
   function _addEdge (connectSource, connectTarget) {
     const new_edge = { id: "ea", sources: [ connectSource ], targets: [ connectTarget ] }
     graph_data.value.edges.push(new_edge)
     applyLayout()
   }
-
   function _searchEdgeByNode(obj, node_id, parentObj=null, index=null) {
     const keys = Object.keys(obj); // add this line to iterate over the keys
 
@@ -109,7 +120,6 @@ export default function setGraphOperations(graph_data, applyLayout, selectedElem
       result[1].splice(result[2], 1)
     }
   }
-
   function _searchGraph(obj, key, value, parentObj=null, index=null) {
     if (obj[key] === value) {
       // return obj
@@ -134,8 +144,15 @@ export default function setGraphOperations(graph_data, applyLayout, selectedElem
       }
     }
   }
+  function _renameObject(obj, oldKey, newKey) {
+    delete Object.assign(obj, {[newKey]: obj[oldKey] })[oldKey]
+  }
 
   return {
     selectedElement, connectSource,
-    nodeSelected, edgeSelected, updateNodeSize, updateNodeContent, addNode, deleteNode, deleteNodeAndEdges, deleteEdge }
+    nodeSelected, edgeSelected,
+    updateNodeSize, updateNodeContent,
+    addNode, deleteNode, deleteNodeAndEdges, deleteEdge,
+    collapseNode
+  }
 }

@@ -28,6 +28,7 @@
                 @update-size="graphOperations.updateNodeSize"
                 @update-content="graphOperations.updateNodeContent"
                 @selected="graphOperations.nodeSelected"
+                @collapse-node="graphOperations.collapseNode"
               ></node>
               <edge
                 v-for="edge in edges"

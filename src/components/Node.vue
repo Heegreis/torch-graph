@@ -13,6 +13,8 @@
           v-focus
           @contextmenu="$emit('selected', node.id)"
         >{{ content }}</div>
+        <q-btn v-if="collapse_status == '+' || collapse_status == '-'"
+          color="primary" :size="'xs'" round :label="collapse_status" @click="collapseNode" />
       </div>
     </foreignObject>
     <g>
@@ -24,6 +26,7 @@
         @update-size="updateSubSize"
         @update-content="updateSubContent"
         @selected="subClicked"
+        @collapse-node="collapseSubNode"
       ></node>
       <edge
         v-for="sub_edge in sub_edges"
@@ -36,7 +39,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted, onUpdated } from 'vue';
+import { defineComponent, ref, onMounted, onUpdated, computed } from 'vue';
 import Edge from 'components/Edge.vue'
 
 export default defineComponent({
@@ -81,14 +84,13 @@ export default defineComponent({
     'updateSize',
     'updateContent',
     'selected',
-    'update:monuted'
+    'collapseNode'
   ],
   setup(props, context) {
     const nodeContent = ref()
     let content = ref(props.node.content)
     const nodeSize = ref({ width: 1, height: 1 })
     let edit = ref(false)
-
 
     const updateSize = () => {
       nodeSize.value = {
@@ -103,8 +105,25 @@ export default defineComponent({
       context.emit('updateContent', props.node.id, content.value)
     }
 
+    const collapse_status = computed(() => {
+      if ("children" in props.node) {
+        return '-'
+      } else if ("_children" in props.node) {
+        return '+'
+      } else {
+        return 'unable'
+      }
+    })
+
+    function collapseNode() {
+      console.log('collapseNode')
+      let action = null
+      if (collapse_status.value == '-') action = 'collapse'
+      if (collapse_status.value == '+') action = 'expand'
+      context.emit('collapseNode', props.node.id, action)
+    }
+
     onMounted(() => {
-      context.emit('update:monuted')
       updateSize()
     })
 
@@ -118,6 +137,10 @@ export default defineComponent({
 
     function updateSubContent(sub_node_id, sub_node_content) {
       context.emit('updateContent', sub_node_id, sub_node_content)
+    }
+
+    function collapseSubNode(sub_node_id, action) {
+      context.emit('collapseNode', sub_node_id, action)
     }
 
     const clicked = () => {
@@ -135,8 +158,11 @@ export default defineComponent({
       edit,
       updateSize,
       updateContent,
+      collapse_status,
+      collapseNode,
       updateSubSize,
       updateSubContent,
+      collapseSubNode,
       clicked,
       subClicked,
     }
